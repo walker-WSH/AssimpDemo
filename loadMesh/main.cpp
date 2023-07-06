@@ -26,10 +26,10 @@
 #include "SafeRelease.hpp"
 
 #ifdef _MSC_VER
-#pragma comment (lib, "d3d11.lib")
-#pragma comment (lib, "Dxgi.lib")
-#pragma comment(lib,"d3dcompiler.lib")
-#pragma comment (lib, "dxguid.lib")
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "Dxgi.lib")
+#pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "dxguid.lib")
 #endif // _MSC_VER
 
 using namespace DirectX;
@@ -53,7 +53,7 @@ struct ConstantBuffer {
 // ------------------------------------------------------------
 //                        Window Variables
 // ------------------------------------------------------------
-#define SCREEN_WIDTH  800
+#define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
 const char g_szClassName[] = "directxWindowClass";
@@ -81,7 +81,7 @@ ID3D11Texture2D *g_pDepthStencil = nullptr;
 ID3D11DepthStencilView *g_pDepthStencilView = nullptr;
 ID3D11SamplerState *TexSamplerState = nullptr;
 ID3D11RasterizerState *rasterstate = nullptr;
-ID3D11Debug* d3d11debug = nullptr;
+ID3D11Debug *d3d11debug = nullptr;
 
 XMMATRIX m_World;
 XMMATRIX m_View;
@@ -98,7 +98,8 @@ void RenderFrame(void);
 void InitPipeline();
 void InitGraphics();
 
-HRESULT	CompileShaderFromFile(LPCWSTR pFileName, const D3D_SHADER_MACRO* pDefines, LPCSTR pEntryPoint, LPCSTR pShaderModel, ID3DBlob** ppBytecodeBlob);
+HRESULT CompileShaderFromFile(LPCWSTR pFileName, const D3D_SHADER_MACRO *pDefines,
+			      LPCSTR pEntryPoint, LPCSTR pShaderModel, ID3DBlob **ppBytecodeBlob);
 void Throwanerror(LPCSTR errormessage);
 
 // ------------------------------------------------------------
@@ -109,8 +110,7 @@ ModelLoader *ourModel = nullptr;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg)
-	{
+	switch (msg) {
 	case WM_CLOSE:
 		DestroyWindow(hwnd);
 		break;
@@ -141,29 +141,23 @@ int main()
 	wc.lpszClassName = g_szClassName;
 	wc.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
 
-	if (!RegisterClassEx(&wc))
-	{
+	if (!RegisterClassEx(&wc)) {
 		MessageBox(nullptr, "Window Registration Failed!", "Error!",
-			MB_ICONEXCLAMATION | MB_OK);
+			   MB_ICONEXCLAMATION | MB_OK);
 		return 0;
 	}
 
-	RECT wr = { 0,0, SCREEN_WIDTH, SCREEN_HEIGHT };
+	RECT wr = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
 	AdjustWindowRect(&wr, WS_OVERLAPPEDWINDOW, FALSE);
 
-	g_hwnd = CreateWindowEx(
-		WS_EX_CLIENTEDGE,
-		g_szClassName,
-		" Simple Textured Directx11 Sample ",
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top,
-		nullptr, nullptr, 0, nullptr
-	);
+	g_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, g_szClassName,
+				" Simple Textured Directx11 Sample ", WS_OVERLAPPEDWINDOW,
+				CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left,
+				wr.bottom - wr.top, nullptr, nullptr, 0, nullptr);
 
-	if (g_hwnd == nullptr)
-	{
+	if (g_hwnd == nullptr) {
 		MessageBox(nullptr, "Window Creation Failed!", "Error!",
-			MB_ICONEXCLAMATION | MB_OK);
+			   MB_ICONEXCLAMATION | MB_OK);
 		return 0;
 	}
 
@@ -176,11 +170,9 @@ int main()
 	try {
 		InitD3D(0, g_hwnd);
 
-		while (true)
-		{
+		while (true) {
 
-			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-			{
+			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 
@@ -193,12 +185,13 @@ int main()
 
 		CleanD3D();
 		return static_cast<int>(msg.wParam);
-	} catch (const std::exception& e) {
+	} catch (const std::exception &e) {
 		MessageBox(g_hwnd, e.what(), TEXT("Error!"), MB_ICONERROR | MB_OK);
 		CleanD3D();
 		return EXIT_FAILURE;
 	} catch (...) {
-		MessageBox(g_hwnd, TEXT("Caught an unknown exception."), TEXT("Error!"), MB_ICONERROR | MB_OK);
+		MessageBox(g_hwnd, TEXT("Caught an unknown exception."), TEXT("Error!"),
+			   MB_ICONERROR | MB_OK);
 		CleanD3D();
 		return EXIT_FAILURE;
 	}
@@ -213,16 +206,14 @@ void InitD3D(HINSTANCE /*hinstance*/, HWND hWnd)
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-	D3D_DRIVER_TYPE driverTypes[] =
-	{
+	D3D_DRIVER_TYPE driverTypes[] = {
 		D3D_DRIVER_TYPE_HARDWARE,
 		D3D_DRIVER_TYPE_WARP,
 		D3D_DRIVER_TYPE_REFERENCE,
 	};
 	UINT numDriverTypes = ARRAYSIZE(driverTypes);
 
-	D3D_FEATURE_LEVEL featureLevels[] =
-	{
+	D3D_FEATURE_LEVEL featureLevels[] = {
 		D3D_FEATURE_LEVEL_11_1,
 		D3D_FEATURE_LEVEL_11_0,
 		D3D_FEATURE_LEVEL_10_1,
@@ -230,17 +221,17 @@ void InitD3D(HINSTANCE /*hinstance*/, HWND hWnd)
 	};
 	UINT numFeatureLevels = ARRAYSIZE(featureLevels);
 
-	for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
-	{
+	for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++) {
 		g_driverType = driverTypes[driverTypeIndex];
-		hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
-			D3D11_SDK_VERSION, &dev, &g_featureLevel, &devcon);
+		hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags,
+				       featureLevels, numFeatureLevels, D3D11_SDK_VERSION, &dev,
+				       &g_featureLevel, &devcon);
 
-		if (hr == E_INVALIDARG)
-		{
+		if (hr == E_INVALIDARG) {
 			// DirectX 11.0 platforms will not recognize D3D_FEATURE_LEVEL_11_1 so we need to retry without it
-			hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, &featureLevels[1], numFeatureLevels - 1,
-				D3D11_SDK_VERSION, &dev, &g_featureLevel, &devcon);
+			hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags,
+					       &featureLevels[1], numFeatureLevels - 1,
+					       D3D11_SDK_VERSION, &dev, &g_featureLevel, &devcon);
 		}
 
 		if (SUCCEEDED(hr))
@@ -256,22 +247,20 @@ void InitD3D(HINSTANCE /*hinstance*/, HWND hWnd)
 #endif
 
 	UINT m4xMsaaQuality;
-	dev->CheckMultisampleQualityLevels(
-		DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMsaaQuality);
-
+	dev->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMsaaQuality);
 
 	// Obtain DXGI factory from device (since we used nullptr for pAdapter above)
-	IDXGIFactory1* dxgiFactory = nullptr;
+	IDXGIFactory1 *dxgiFactory = nullptr;
 	{
-		IDXGIDevice* dxgiDevice = nullptr;
-		hr = dev->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
-		if (SUCCEEDED(hr))
-		{
-			IDXGIAdapter* adapter = nullptr;
+		IDXGIDevice *dxgiDevice = nullptr;
+		hr = dev->QueryInterface(__uuidof(IDXGIDevice),
+					 reinterpret_cast<void **>(&dxgiDevice));
+		if (SUCCEEDED(hr)) {
+			IDXGIAdapter *adapter = nullptr;
 			hr = dxgiDevice->GetAdapter(&adapter);
-			if (SUCCEEDED(hr))
-			{
-				hr = adapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(&dxgiFactory));
+			if (SUCCEEDED(hr)) {
+				hr = adapter->GetParent(__uuidof(IDXGIFactory1),
+							reinterpret_cast<void **>(&dxgiFactory));
 				adapter->Release();
 			}
 			dxgiDevice->Release();
@@ -281,15 +270,15 @@ void InitD3D(HINSTANCE /*hinstance*/, HWND hWnd)
 		Throwanerror("DXGI Factory couldn't be obtained!");
 
 	// Create swap chain
-	IDXGIFactory2* dxgiFactory2 = nullptr;
-	hr = dxgiFactory->QueryInterface(__uuidof(IDXGIFactory2), reinterpret_cast<void**>(&dxgiFactory2));
-	if (dxgiFactory2)
-	{
+	IDXGIFactory2 *dxgiFactory2 = nullptr;
+	hr = dxgiFactory->QueryInterface(__uuidof(IDXGIFactory2),
+					 reinterpret_cast<void **>(&dxgiFactory2));
+	if (dxgiFactory2) {
 		// DirectX 11.1 or later
-		hr = dev->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(&dev1));
-		if (SUCCEEDED(hr))
-		{
-			(void)devcon->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&devcon1));
+		hr = dev->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void **>(&dev1));
+		if (SUCCEEDED(hr)) {
+			(void)devcon->QueryInterface(__uuidof(ID3D11DeviceContext1),
+						     reinterpret_cast<void **>(&devcon1));
 		}
 
 		DXGI_SWAP_CHAIN_DESC1 sd;
@@ -302,16 +291,15 @@ void InitD3D(HINSTANCE /*hinstance*/, HWND hWnd)
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.BufferCount = 1;
 
-		hr = dxgiFactory2->CreateSwapChainForHwnd(dev, hWnd, &sd, nullptr, nullptr, &swapchain1);
-		if (SUCCEEDED(hr))
-		{
-			hr = swapchain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(&swapchain));
+		hr = dxgiFactory2->CreateSwapChainForHwnd(dev, hWnd, &sd, nullptr, nullptr,
+							  &swapchain1);
+		if (SUCCEEDED(hr)) {
+			hr = swapchain1->QueryInterface(__uuidof(IDXGISwapChain),
+							reinterpret_cast<void **>(&swapchain));
 		}
 
 		dxgiFactory2->Release();
-	}
-	else
-	{
+	} else {
 		// DirectX 11.0 systems
 		DXGI_SWAP_CHAIN_DESC sd;
 		ZeroMemory(&sd, sizeof(sd));
@@ -339,7 +327,7 @@ void InitD3D(HINSTANCE /*hinstance*/, HWND hWnd)
 		Throwanerror("Swapchain Creation Failed!");
 
 	ID3D11Texture2D *pBackBuffer;
-	swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+	swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *)&pBackBuffer);
 
 	dev->CreateRenderTargetView(pBackBuffer, nullptr, &backbuffer);
 	pBackBuffer->Release();
@@ -368,8 +356,7 @@ void InitD3D(HINSTANCE /*hinstance*/, HWND hWnd)
 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
 	hr = dev->CreateDepthStencilView(g_pDepthStencil, 0, &g_pDepthStencilView);
-	if (FAILED(hr))
-	{
+	if (FAILED(hr)) {
 		Throwanerror("Depth Stencil View couldn't be created!");
 	}
 
@@ -436,7 +423,8 @@ void CleanD3D(void)
 		d3d11debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 		SafeRelease(d3d11debug);
 	} else {
-		OutputDebugString(TEXT("Unable to dump live objects: no DirectX 11 debug interface available.\n"));
+		OutputDebugString(TEXT(
+			"Unable to dump live objects: no DirectX 11 debug interface available.\n"));
 	}
 #endif
 	SafeRelease(dev);
@@ -451,13 +439,14 @@ void RenderFrame(void)
 		timeStart = timeCur;
 	t = (timeCur - timeStart) / 1000.0f;
 
-	float clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
+	float clearColor[4] = {0.0f, 0.2f, 0.4f, 1.0f};
 	devcon->ClearRenderTargetView(backbuffer, clearColor);
-	devcon->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	devcon->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+				      1.0f, 0);
 
 	devcon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	m_World = XMMatrixRotationY(-t);
+	m_World = XMMatrixRotationY(t);
 
 	ConstantBuffer cb;
 	cb.mWorld = XMMatrixTranspose(m_World);
@@ -477,19 +466,20 @@ void RenderFrame(void)
 void InitPipeline()
 {
 	ID3DBlob *VS, *PS;
-	if(FAILED(CompileShaderFromFile(VERTEX_SHADER_FILE, 0, "main", "vs_4_0", &VS)))
-		Throwanerror(UTFConverter(L"Failed to compile shader from file " VERTEX_SHADER_FILE).c_str());
-	if(FAILED(CompileShaderFromFile(PIXEL_SHADER_FILE, 0, "main", "ps_4_0", &PS)))
-		Throwanerror(UTFConverter(L"Failed to compile shader from file " PIXEL_SHADER_FILE).c_str());
+	if (FAILED(CompileShaderFromFile(VERTEX_SHADER_FILE, 0, "main", "vs_4_0", &VS)))
+		Throwanerror(UTFConverter(L"Failed to compile shader from file " VERTEX_SHADER_FILE)
+				     .c_str());
+	if (FAILED(CompileShaderFromFile(PIXEL_SHADER_FILE, 0, "main", "ps_4_0", &PS)))
+		Throwanerror(UTFConverter(L"Failed to compile shader from file " PIXEL_SHADER_FILE)
+				     .c_str());
 
 	dev->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), nullptr, &pVS);
 	dev->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), nullptr, &pPS);
 
-	D3D11_INPUT_ELEMENT_DESC ied[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
+	D3D11_INPUT_ELEMENT_DESC ied[] = {
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+		 D3D11_INPUT_PER_VERTEX_DATA, 0}};
 
 	dev->CreateInputLayout(ied, 2, VS->GetBufferPointer(), VS->GetBufferSize(), &pLayout);
 	devcon->IASetInputLayout(pLayout);
@@ -499,7 +489,8 @@ void InitGraphics()
 {
 	HRESULT hr;
 
-	m_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.01f, 1000.0f);
+	m_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, SCREEN_WIDTH / (float)SCREEN_HEIGHT,
+						0.01f, 1000.0f);
 
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -527,8 +518,8 @@ void InitGraphics()
 	if (FAILED(hr))
 		Throwanerror("Texture sampler state couldn't be created");
 
-	XMVECTOR Eye = XMVectorSet(0.0f, 5.0f, -300.0f, 0.0f);
-	XMVECTOR At = XMVectorSet(0.0f, 100.0f, 0.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, -100.0f, -200.0f, 0.0f);
+	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	m_View = XMMatrixLookAtLH(Eye, At, Up);
 
@@ -537,7 +528,8 @@ void InitGraphics()
 		Throwanerror("Model couldn't be loaded");
 }
 
-HRESULT	CompileShaderFromFile(LPCWSTR pFileName, const D3D_SHADER_MACRO* pDefines, LPCSTR pEntryPoint, LPCSTR pShaderModel, ID3DBlob** ppBytecodeBlob)
+HRESULT CompileShaderFromFile(LPCWSTR pFileName, const D3D_SHADER_MACRO *pDefines,
+			      LPCSTR pEntryPoint, LPCSTR pShaderModel, ID3DBlob **ppBytecodeBlob)
 {
 	UINT compileFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR;
 
@@ -545,11 +537,12 @@ HRESULT	CompileShaderFromFile(LPCWSTR pFileName, const D3D_SHADER_MACRO* pDefine
 	compileFlags |= D3DCOMPILE_DEBUG;
 #endif
 
-	ID3DBlob* pErrorBlob = nullptr;
+	ID3DBlob *pErrorBlob = nullptr;
 
-	HRESULT result = D3DCompileFromFile(pFileName, pDefines, D3D_COMPILE_STANDARD_FILE_INCLUDE, pEntryPoint, pShaderModel, compileFlags, 0, ppBytecodeBlob, &pErrorBlob);
-	if (FAILED(result))
-	{
+	HRESULT result = D3DCompileFromFile(pFileName, pDefines, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+					    pEntryPoint, pShaderModel, compileFlags, 0,
+					    ppBytecodeBlob, &pErrorBlob);
+	if (FAILED(result)) {
 		if (pErrorBlob != nullptr)
 			OutputDebugStringA((LPCSTR)pErrorBlob->GetBufferPointer());
 	}
