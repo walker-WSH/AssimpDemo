@@ -36,7 +36,7 @@ using namespace DirectX;
 using namespace AssimpSamples::SharedCode;
 
 //static std::string g_ModelPath = "mesh/sphere.x";
-static std::string g_ModelPath = "mesh/cat.x";
+static std::string g_ModelPath = "mesh/111.x";
 
 #define VERTEX_SHADER_FILE L"VertexShader.hlsl"
 #define PIXEL_SHADER_FILE L"PixelShader.hlsl"
@@ -518,7 +518,7 @@ void InitGraphics()
 	if (FAILED(hr))
 		Throwanerror("Texture sampler state couldn't be created");
 
-	XMVECTOR Eye = XMVectorSet(0.0f, -100.0f, -200.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 100.0f, -200.0f, 0.0f);
 	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	m_View = XMMatrixLookAtLH(Eye, At, Up);
