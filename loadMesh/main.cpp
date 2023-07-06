@@ -35,7 +35,8 @@
 using namespace DirectX;
 using namespace AssimpSamples::SharedCode;
 
-static std::string g_ModelPath = "mesh/test1.x";
+//static std::string g_ModelPath = "mesh/sphere.x";
+static std::string g_ModelPath = "mesh/cube.x";
 
 #define VERTEX_SHADER_FILE L"VertexShader.hlsl"
 #define PIXEL_SHADER_FILE L"PixelShader.hlsl"
