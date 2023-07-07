@@ -24,6 +24,7 @@
 #include "ModelLoader.h"
 #include "UTFConverter.h"
 #include "SafeRelease.hpp"
+#include <DirectXMath.h>
 
 #ifdef _MSC_VER
 #pragma comment(lib, "d3d11.lib")
@@ -35,8 +36,8 @@
 using namespace DirectX;
 using namespace AssimpSamples::SharedCode;
 
-//static std::string g_ModelPath = "mesh/sphere.x";
-static std::string g_ModelPath = "mesh/111.obj";
+static std::string g_ModelPath = "mesh/sphere.x";
+//static std::string g_ModelPath = "mesh/111.obj";
 
 #define VERTEX_SHADER_FILE L"VertexShader.hlsl"
 #define PIXEL_SHADER_FILE L"PixelShader.hlsl"
@@ -433,14 +434,14 @@ void CleanD3D(void)
 void RenderFrame(void)
 {
 	{
-		static float t = 0.0f;
-		static ULONGLONG timeStart = 0;
-		ULONGLONG timeCur = GetTickCount64();
-		if (timeStart == 0)
-			timeStart = timeCur;
-		t = (timeCur - timeStart) / 1000.0f;
+		static ULONGLONG startTime = GetTickCount64();
+		static auto circleDuration = 20 * 1000; // ms
 
-		m_World = XMMatrixRotationY(t);
+		auto tm = GetTickCount64() - startTime;
+		tm %= circleDuration;
+
+		auto percent = float(tm) / float(circleDuration);
+		m_World = XMMatrixRotationY(percent * XM_2PI);
 	}
 
 	float clearColor[4] = {0.0f, 0.2f, 0.4f, 1.0f};

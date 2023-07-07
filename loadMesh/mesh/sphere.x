@@ -135,7 +135,7 @@ Material Material__25 {
  0.000000;0.000000;0.000000;;
 
  TextureFilename {
-  "1A.png";
+  "phere.jpg";
  }
 }
 
