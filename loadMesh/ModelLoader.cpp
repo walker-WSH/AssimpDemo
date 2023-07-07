@@ -66,6 +66,10 @@ Mesh ModelLoader::processMesh(aiMesh *mesh, const aiScene *scene)
 		}
 
 		vertices.push_back(vertex);
+
+		ATLTRACE("--------- [%d/%d] x:%f  y:%f   z:%f,  %f, %f    \n", i + 1,
+			 mesh->mNumVertices, vertex.X, vertex.Y, vertex.Z, vertex.texcoord.x,
+			 vertex.texcoord.y);
 	}
 
 	for (UINT i = 0; i < mesh->mNumFaces; i++) {
