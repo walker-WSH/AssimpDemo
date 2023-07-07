@@ -67,7 +67,7 @@ Mesh ModelLoader::processMesh(aiMesh *mesh, const aiScene *scene)
 
 		vertices.push_back(vertex);
 
-		ATLTRACE("--------- [%d/%d] x:%f  y:%f   z:%f,  %f, %f    \n", i + 1,
+		ATLTRACE("---------vertex [%d/%d] x:%f  y:%f   z:%f,  %f, %f    \n", i,
 			 mesh->mNumVertices, vertex.X, vertex.Y, vertex.Z, vertex.texcoord.x,
 			 vertex.texcoord.y);
 	}
@@ -75,14 +75,21 @@ Mesh ModelLoader::processMesh(aiMesh *mesh, const aiScene *scene)
 	for (UINT i = 0; i < mesh->mNumFaces; i++) {
 		aiFace face = mesh->mFaces[i];
 
-		for (UINT j = 0; j < face.mNumIndices; j++)
+		std::string points = "";
+		for (UINT j = 0; j < face.mNumIndices; j++) {
 			indices.push_back(face.mIndices[j]);
+			points += std::to_string(face.mIndices[j]);
+			points += "  ";
+		}
+
+		ATLTRACE("index [%d/%d]  %s   \n", i + 1, mesh->mNumFaces, points.c_str());
 	}
 
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
-		std::vector<Texture> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, scene);
+		std::vector<Texture> diffuseMaps =
+			this->loadMaterialTextures(material, aiTextureType_DIFFUSE, scene);
 		assert(!diffuseMaps.empty());
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 	}
@@ -90,7 +97,8 @@ Mesh ModelLoader::processMesh(aiMesh *mesh, const aiScene *scene)
 	return Mesh(dev_, vertices, indices, textures);
 }
 
-std::vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial *mat, aiTextureType type,  const aiScene *scene)
+std::vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
+						       const aiScene *scene)
 {
 	std::vector<Texture> textures;
 	auto count = mat->GetTextureCount(type);
@@ -119,8 +127,7 @@ std::vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial *mat, aiTextur
 				auto path = directory_ + "\\" + std::string(str.C_Str());
 				auto wpath = std::wstring(path.begin(), path.end());
 				HRESULT hr = CreateWICTextureFromFile(dev_, devcon_, wpath.c_str(),
-								     nullptr,
-							      &texture.texture);
+								      nullptr, &texture.texture);
 				if (FAILED(hr)) {
 					assert(false);
 					MessageBox(hwnd_, "Texture couldn't be loaded", "Error!",
