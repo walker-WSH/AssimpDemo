@@ -78,7 +78,7 @@ Mesh ModelLoader::processMesh(aiMesh *mesh, const aiScene *scene)
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
-		std::vector<Texture> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
+		std::vector<Texture> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, scene);
 		assert(!diffuseMaps.empty());
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 	}
@@ -86,8 +86,7 @@ Mesh ModelLoader::processMesh(aiMesh *mesh, const aiScene *scene)
 	return Mesh(dev_, vertices, indices, textures);
 }
 
-std::vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
-						       std::string typeName, const aiScene *scene)
+std::vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial *mat, aiTextureType type,  const aiScene *scene)
 {
 	std::vector<Texture> textures;
 	auto count = mat->GetTextureCount(type);
@@ -107,7 +106,6 @@ std::vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial *mat, aiTextur
 
 		if (!skip) { // If texture hasn't been loaded already, load it
 			Texture texture;
-			texture.type = typeName;
 			texture.path = str.C_Str();
 
 			const aiTexture *embeddedTexture = scene->GetEmbeddedTexture(str.C_Str());

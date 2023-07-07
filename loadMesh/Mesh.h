@@ -21,7 +21,6 @@ struct VERTEX {
 };
 
 struct Texture {
-	std::string type;
 	std::string path;
 	ID3D11ShaderResourceView *texture;
 
@@ -34,7 +33,6 @@ class Mesh {
 	std::vector<VERTEX> vertices_;
 	std::vector<UINT> indices_;
 
-	// Render data
 	ID3D11Buffer *VertexBuffer_ = nullptr;
 	ID3D11Buffer *IndexBuffer_ = nullptr;
 
