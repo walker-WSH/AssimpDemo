@@ -14,16 +14,16 @@
 
 using namespace DirectX;
 
-class ModelLoader
-{
+class ModelLoader {
 public:
 	ModelLoader();
 	~ModelLoader();
 
-	bool Load(HWND hwnd, ID3D11Device* dev, ID3D11DeviceContext* devcon, std::string filename);
-	void Draw(ID3D11DeviceContext* devcon);
+	bool Load(HWND hwnd, ID3D11Device *dev, ID3D11DeviceContext *devcon, std::string filename);
+	void Draw(ID3D11DeviceContext *devcon);
 
 	void Close();
+
 private:
 	ID3D11Device *dev_;
 	ID3D11DeviceContext *devcon_;
@@ -32,11 +32,11 @@ private:
 	std::vector<Texture> textures_loaded_;
 	HWND hwnd_;
 
-	void processNode(aiNode* node, const aiScene* scene);
-	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-	std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, const aiScene* scene);
-	ID3D11ShaderResourceView* loadEmbeddedTexture(const aiTexture* embeddedTexture);
+	void processNode(aiNode *node, const aiScene *scene);
+	Mesh processMesh(aiMesh *mesh, const aiScene *scene);
+	std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type,
+						  std::string typeName, const aiScene *scene);
+	ID3D11ShaderResourceView *loadEmbeddedTexture(const aiTexture *embeddedTexture);
 };
 
 #endif // !MODEL_LOADER_H
-

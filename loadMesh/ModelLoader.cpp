@@ -1,26 +1,28 @@
 #include "ModelLoader.h"
 
-ModelLoader::ModelLoader() :
-        dev_(nullptr),
-        devcon_(nullptr),
-        meshes_(),
-        directory_(),
-        textures_loaded_(),
-        hwnd_(nullptr) {
-    // empty
+ModelLoader::ModelLoader()
+	: dev_(nullptr),
+	  devcon_(nullptr),
+	  meshes_(),
+	  directory_(),
+	  textures_loaded_(),
+	  hwnd_(nullptr)
+{
+	// empty
 }
 
-
-ModelLoader::~ModelLoader() {
-    // empty
+ModelLoader::~ModelLoader()
+{
+	// empty
 }
 
-bool ModelLoader::Load(HWND hwnd, ID3D11Device * dev, ID3D11DeviceContext * devcon, std::string filename) {
+bool ModelLoader::Load(HWND hwnd, ID3D11Device *dev, ID3D11DeviceContext *devcon,
+		       std::string filename)
+{
 	Assimp::Importer importer;
 
-	const aiScene* pScene = importer.ReadFile(filename,
-		aiProcess_Triangulate |
-		aiProcess_ConvertToLeftHanded);
+	const aiScene *pScene =
+		importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
 
 	if (pScene == nullptr)
 		return false;
@@ -36,13 +38,15 @@ bool ModelLoader::Load(HWND hwnd, ID3D11Device * dev, ID3D11DeviceContext * devc
 	return true;
 }
 
-void ModelLoader::Draw(ID3D11DeviceContext * devcon) {
-	for (size_t i = 0; i < meshes_.size(); ++i ) {
+void ModelLoader::Draw(ID3D11DeviceContext *devcon)
+{
+	for (size_t i = 0; i < meshes_.size(); ++i) {
 		meshes_[i].Draw(devcon);
 	}
 }
 
-Mesh ModelLoader::processMesh(aiMesh * mesh, const aiScene * scene) {
+Mesh ModelLoader::processMesh(aiMesh *mesh, const aiScene *scene)
+{
 	// Data to fill
 	std::vector<VERTEX> vertices;
 	std::vector<UINT> indices;
@@ -72,9 +76,10 @@ Mesh ModelLoader::processMesh(aiMesh * mesh, const aiScene * scene) {
 	}
 
 	if (mesh->mMaterialIndex >= 0) {
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+		aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
-		std::vector<Texture> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
+		std::vector<Texture> diffuseMaps = this->loadMaterialTextures(
+			material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
 		assert(!diffuseMaps.empty());
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 	}
@@ -82,7 +87,9 @@ Mesh ModelLoader::processMesh(aiMesh * mesh, const aiScene * scene) {
 	return Mesh(dev_, vertices, indices, textures);
 }
 
-std::vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial * mat, aiTextureType type, std::string typeName, const aiScene * scene) {
+std::vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
+						       std::string typeName, const aiScene *scene)
+{
 	std::vector<Texture> textures;
 	auto count = mat->GetTextureCount(type);
 	for (UINT i = 0; i < count; i++) {
@@ -97,33 +104,38 @@ std::vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial * mat, aiTextu
 				break;
 			}
 		}
-		if (!skip) {   // If texture hasn't been loaded already, load it
+		if (!skip) { // If texture hasn't been loaded already, load it
 			HRESULT hr;
 			Texture texture;
 
-			const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(str.C_Str());
+			const aiTexture *embeddedTexture = scene->GetEmbeddedTexture(str.C_Str());
 			if (embeddedTexture != nullptr) {
 				texture.texture = loadEmbeddedTexture(embeddedTexture);
 			} else {
 				std::string filename = std::string(str.C_Str());
-				std::wstring filenamews = L"mesh/" + std::wstring(filename.begin(), filename.end());
-				hr = CreateWICTextureFromFile(dev_, devcon_, filenamews.c_str(), nullptr, &texture.texture);
+				std::wstring filenamews =
+					L"mesh/" + std::wstring(filename.begin(), filename.end());
+				hr = CreateWICTextureFromFile(dev_, devcon_, filenamews.c_str(),
+							      nullptr, &texture.texture);
 				if (FAILED(hr)) {
 					assert(false);
-					MessageBox(hwnd_, "Texture couldn't be loaded", "Error!", MB_ICONERROR | MB_OK);
+					MessageBox(hwnd_, "Texture couldn't be loaded", "Error!",
+						   MB_ICONERROR | MB_OK);
 				}
 			}
 			texture.type = typeName;
 			texture.path = str.C_Str();
 			textures.push_back(texture);
-			this->textures_loaded_.push_back(texture);  // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+			this->textures_loaded_.push_back(
+				texture); // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
 		}
 	}
 	return textures;
 }
 
-void ModelLoader::Close() {
-	for (auto& t : textures_loaded_)
+void ModelLoader::Close()
+{
+	for (auto &t : textures_loaded_)
 		t.Release();
 
 	for (size_t i = 0; i < meshes_.size(); i++) {
@@ -131,9 +143,10 @@ void ModelLoader::Close() {
 	}
 }
 
-void ModelLoader::processNode(aiNode * node, const aiScene * scene) {
+void ModelLoader::processNode(aiNode *node, const aiScene *scene)
+{
 	for (UINT i = 0; i < node->mNumMeshes; i++) {
-		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+		aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
 		meshes_.push_back(this->processMesh(mesh, scene));
 	}
 
@@ -142,7 +155,8 @@ void ModelLoader::processNode(aiNode * node, const aiScene * scene) {
 	}
 }
 
-ID3D11ShaderResourceView * ModelLoader::loadEmbeddedTexture(const aiTexture* embeddedTexture) {
+ID3D11ShaderResourceView *ModelLoader::loadEmbeddedTexture(const aiTexture *embeddedTexture)
+{
 	HRESULT hr;
 	ID3D11ShaderResourceView *texture = nullptr;
 
@@ -164,16 +178,19 @@ ID3D11ShaderResourceView * ModelLoader::loadEmbeddedTexture(const aiTexture* emb
 		D3D11_SUBRESOURCE_DATA subresourceData;
 		subresourceData.pSysMem = embeddedTexture->pcData;
 		subresourceData.SysMemPitch = embeddedTexture->mWidth * 4;
-		subresourceData.SysMemSlicePitch = embeddedTexture->mWidth * embeddedTexture->mHeight * 4;
+		subresourceData.SysMemSlicePitch =
+			embeddedTexture->mWidth * embeddedTexture->mHeight * 4;
 
 		ID3D11Texture2D *texture2D = nullptr;
 		hr = dev_->CreateTexture2D(&desc, &subresourceData, &texture2D);
 		if (FAILED(hr))
-			MessageBox(hwnd_, "CreateTexture2D failed!", "Error!", MB_ICONERROR | MB_OK);
+			MessageBox(hwnd_, "CreateTexture2D failed!", "Error!",
+				   MB_ICONERROR | MB_OK);
 
 		hr = dev_->CreateShaderResourceView(texture2D, nullptr, &texture);
 		if (FAILED(hr))
-			MessageBox(hwnd_, "CreateShaderResourceView failed!", "Error!", MB_ICONERROR | MB_OK);
+			MessageBox(hwnd_, "CreateShaderResourceView failed!", "Error!",
+				   MB_ICONERROR | MB_OK);
 
 		return texture;
 	}
@@ -181,9 +198,12 @@ ID3D11ShaderResourceView * ModelLoader::loadEmbeddedTexture(const aiTexture* emb
 	// mHeight is 0, so try to load a compressed texture of mWidth bytes
 	const size_t size = embeddedTexture->mWidth;
 
-	hr = CreateWICTextureFromMemory(dev_, devcon_, reinterpret_cast<const unsigned char*>(embeddedTexture->pcData), size, nullptr, &texture);
+	hr = CreateWICTextureFromMemory(
+		dev_, devcon_, reinterpret_cast<const unsigned char *>(embeddedTexture->pcData),
+		size, nullptr, &texture);
 	if (FAILED(hr))
-		MessageBox(hwnd_, "Texture couldn't be created from memory!", "Error!", MB_ICONERROR | MB_OK);
+		MessageBox(hwnd_, "Texture couldn't be created from memory!", "Error!",
+			   MB_ICONERROR | MB_OK);
 
 	return texture;
 }
