@@ -432,32 +432,35 @@ void CleanD3D(void)
 
 void RenderFrame(void)
 {
-	static float t = 0.0f;
-	static ULONGLONG timeStart = 0;
-	ULONGLONG timeCur = GetTickCount64();
-	if (timeStart == 0)
-		timeStart = timeCur;
-	t = (timeCur - timeStart) / 1000.0f;
+	{
+		static float t = 0.0f;
+		static ULONGLONG timeStart = 0;
+		ULONGLONG timeCur = GetTickCount64();
+		if (timeStart == 0)
+			timeStart = timeCur;
+		t = (timeCur - timeStart) / 1000.0f;
+
+		m_World = XMMatrixRotationY(t);
+	}
 
 	float clearColor[4] = {0.0f, 0.2f, 0.4f, 1.0f};
-	devcon->ClearRenderTargetView(backbuffer, clearColor);
-	devcon->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-				      1.0f, 0);
-
-	devcon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	m_World = XMMatrixRotationY(t);
 
 	ConstantBuffer cb;
 	cb.mWorld = XMMatrixTranspose(m_World);
 	cb.mView = XMMatrixTranspose(m_View);
 	cb.mProjection = XMMatrixTranspose(m_Projection);
+
 	devcon->UpdateSubresource(pConstantBuffer, 0, nullptr, &cb, 0, 0);
 
+	devcon->ClearRenderTargetView(backbuffer, clearColor);
+	devcon->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	devcon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	devcon->VSSetShader(pVS, 0, 0);
 	devcon->VSSetConstantBuffers(0, 1, &pConstantBuffer);
 	devcon->PSSetShader(pPS, 0, 0);
 	devcon->PSSetSamplers(0, 1, &TexSamplerState);
+	
 	ourModel->Draw(devcon);
 
 	swapchain->Present(0, 0);

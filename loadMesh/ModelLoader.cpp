@@ -78,8 +78,7 @@ Mesh ModelLoader::processMesh(aiMesh *mesh, const aiScene *scene)
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
-		std::vector<Texture> diffuseMaps = this->loadMaterialTextures(
-			material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
+		std::vector<Texture> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", scene);
 		assert(!diffuseMaps.empty());
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 	}
@@ -95,6 +94,7 @@ std::vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial *mat, aiTextur
 	for (UINT i = 0; i < count; i++) {
 		aiString str;
 		mat->GetTexture(type, i, &str);
+
 		// Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
 		bool skip = false;
 		for (UINT j = 0; j < textures_loaded_.size(); j++) {
@@ -104,27 +104,28 @@ std::vector<Texture> ModelLoader::loadMaterialTextures(aiMaterial *mat, aiTextur
 				break;
 			}
 		}
+
 		if (!skip) { // If texture hasn't been loaded already, load it
-			HRESULT hr;
 			Texture texture;
+			texture.type = typeName;
+			texture.path = str.C_Str();
 
 			const aiTexture *embeddedTexture = scene->GetEmbeddedTexture(str.C_Str());
 			if (embeddedTexture != nullptr) {
 				texture.texture = loadEmbeddedTexture(embeddedTexture);
 			} else {
-				std::string filename = std::string(str.C_Str());
-				std::wstring filenamews =
-					L"mesh/" + std::wstring(filename.begin(), filename.end());
-				hr = CreateWICTextureFromFile(dev_, devcon_, filenamews.c_str(),
-							      nullptr, &texture.texture);
+				auto path = directory_ + "\\" + std::string(str.C_Str());
+				auto wpath = std::wstring(path.begin(), path.end());
+				HRESULT hr = CreateWICTextureFromFile(dev_, devcon_, wpath.c_str(),
+								     nullptr,
+							      &texture.texture);
 				if (FAILED(hr)) {
 					assert(false);
 					MessageBox(hwnd_, "Texture couldn't be loaded", "Error!",
 						   MB_ICONERROR | MB_OK);
 				}
 			}
-			texture.type = typeName;
-			texture.path = str.C_Str();
+
 			textures.push_back(texture);
 			this->textures_loaded_.push_back(
 				texture); // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.

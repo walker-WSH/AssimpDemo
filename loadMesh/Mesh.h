@@ -29,23 +29,26 @@ struct Texture {
 };
 
 class Mesh {
-public:
+	std::vector<Texture> textures_;
+
 	std::vector<VERTEX> vertices_;
 	std::vector<UINT> indices_;
-	std::vector<Texture> textures_;
-	ID3D11Device *dev_;
 
+	// Render data
+	ID3D11Buffer *VertexBuffer_ = nullptr;
+	ID3D11Buffer *IndexBuffer_ = nullptr;
+
+public:
 	Mesh(ID3D11Device *dev, const std::vector<VERTEX> &vertices,
 	     const std::vector<UINT> &indices, const std::vector<Texture> &textures)
 		: vertices_(vertices),
 		  indices_(indices),
 		  textures_(textures),
-		  dev_(dev),
 		  VertexBuffer_(nullptr),
 		  IndexBuffer_(nullptr)
 	{
 		assert(!vertices.empty() && !textures.empty());
-		this->setupMesh(this->dev_);
+		this->setupMesh(dev);
 	}
 
 	void Draw(ID3D11DeviceContext *devcon)
@@ -55,7 +58,6 @@ public:
 
 		devcon->IASetVertexBuffers(0, 1, &VertexBuffer_, &stride, &offset);
 		devcon->IASetIndexBuffer(IndexBuffer_, DXGI_FORMAT_R32_UINT, 0);
-
 		devcon->PSSetShaderResources(0, 1, &textures_[0].texture);
 
 		devcon->DrawIndexed(static_cast<UINT>(indices_.size()), 0, 0);
@@ -68,9 +70,6 @@ public:
 	}
 
 private:
-	// Render data
-	ID3D11Buffer *VertexBuffer_, *IndexBuffer_;
-
 	// Functions
 	// Initializes all the buffer objects/arrays
 	void setupMesh(ID3D11Device *dev)
