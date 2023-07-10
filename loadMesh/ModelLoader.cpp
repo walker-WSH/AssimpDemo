@@ -61,7 +61,12 @@ Mesh ModelLoader::processMesh(aiMesh *mesh, const aiScene *scene)
 		vertex.Z = mesh->mVertices[i].z;
 
 		if (mesh->mTextureCoords[0]) {
-			vertex.texcoord.x = (float)mesh->mTextureCoords[0][i].x;
+			if (phere_center) {
+				vertex.texcoord.x = 1 - (float)mesh->mTextureCoords[0][i].x;
+			} else {
+				vertex.texcoord.x = (float)mesh->mTextureCoords[0][i].x;
+			}
+
 			vertex.texcoord.y = (float)mesh->mTextureCoords[0][i].y;
 		}
 
@@ -74,15 +79,16 @@ Mesh ModelLoader::processMesh(aiMesh *mesh, const aiScene *scene)
 
 	for (UINT i = 0; i < mesh->mNumFaces; i++) {
 		aiFace face = mesh->mFaces[i];
+		assert(face.mNumIndices == 3); // must be triangle
 
-		std::string points = "";
-		for (UINT j = 0; j < face.mNumIndices; j++) {
-			indices.push_back(face.mIndices[j]);
-			points += std::to_string(face.mIndices[j]);
-			points += "  ";
+		indices.push_back(face.mIndices[0]);
+		if (phere_center) {
+			indices.push_back(face.mIndices[2]);
+			indices.push_back(face.mIndices[1]);
+		} else {
+			indices.push_back(face.mIndices[1]);
+			indices.push_back(face.mIndices[2]);
 		}
-
-		ATLTRACE("index [%d/%d]  %s   \n", i + 1, mesh->mNumFaces, points.c_str());
 	}
 
 	if (mesh->mMaterialIndex >= 0) {

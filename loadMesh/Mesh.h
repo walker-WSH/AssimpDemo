@@ -16,6 +16,8 @@ using namespace DirectX;
 
 #include "SafeRelease.hpp"
 
+static bool phere_center = true;
+
 struct VERTEX {
 	FLOAT X, Y, Z;
 	XMFLOAT2 texcoord;

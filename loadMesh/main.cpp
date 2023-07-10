@@ -435,7 +435,7 @@ void RenderFrame(void)
 {
 	{
 		static ULONGLONG startTime = GetTickCount64();
-		static auto circleDuration = 20 * 1000; // ms
+		static auto circleDuration = 80 * 1000; // ms
 
 		auto tm = GetTickCount64() - startTime;
 		tm %= circleDuration;
@@ -499,7 +499,6 @@ void InitGraphics()
 	rd.FrontCounterClockwise = false; // 顶点顺时针为三角形的正面
 	rd.FillMode = D3D11_FILL_SOLID;
 	rd.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
-	//rd.FrontCounterClockwise = TRUE;
 
 	ID3D11RasterizerState* state;
 	hr = dev->CreateRasterizerState(&rd, &state);
@@ -535,9 +534,15 @@ void InitGraphics()
 	if (FAILED(hr))
 		Throwanerror("Texture sampler state couldn't be created");
 
-	XMVECTOR Eye = XMVectorSet(0.0f, 100.0f, -200.0f, 0.0f);
-	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	XMVECTOR Eye, At;
+	if (phere_center) {
+		Eye = XMVectorSet(0.0f, 0.0f, -50.0f, 0.0f);
+		At = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	} else {
+		Eye = XMVectorSet(0.0f, 100.0f, -200.0f, 0.0f);
+		At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	}
 	m_View = XMMatrixLookAtLH(Eye, At, Up);
 
 	ourModel = new ModelLoader;
