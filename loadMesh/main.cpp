@@ -493,6 +493,19 @@ void InitGraphics()
 {
 	HRESULT hr;
 
+	
+	CD3D11_RASTERIZER_DESC rd(CD3D11_DEFAULT{});
+
+	rd.FrontCounterClockwise = false; // 顶点顺时针为三角形的正面
+	rd.FillMode = D3D11_FILL_SOLID;
+	rd.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
+	//rd.FrontCounterClockwise = TRUE;
+
+	ID3D11RasterizerState* state;
+	hr = dev->CreateRasterizerState(&rd, &state);
+	devcon->RSSetState(state);
+
+
 	m_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, SCREEN_WIDTH / (float)SCREEN_HEIGHT,
 						0.01f, 1000.0f);
 
